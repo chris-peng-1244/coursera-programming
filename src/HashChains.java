@@ -1,15 +1,12 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class HashChains {
 
     private FastScanner in;
     private PrintWriter out;
     // store all strings in one list
-    private List<String> elems;
+    private List<LinkedList<String>> elems;
     // for hash function
     private int bucketCount;
     private int prime = 1000000007;
@@ -40,40 +37,83 @@ public class HashChains {
     private void writeSearchResult(boolean wasFound) {
         out.println(wasFound ? "yes" : "no");
         // Uncomment the following if you want to play with the program interactively.
-        // out.flush();
+         out.flush();
     }
 
     private void processQuery(Query query) {
         switch (query.type) {
             case "add":
-                if (!elems.contains(query.s))
-                    elems.add(0, query.s);
+                if (!find(query.s))
+                    add(query.s);
                 break;
             case "del":
-                if (elems.contains(query.s))
-                    elems.remove(query.s);
+                if (find(query.s))
+                    del(query.s);
                 break;
             case "find":
-                writeSearchResult(elems.contains(query.s));
+                writeSearchResult(find(query.s));
                 break;
             case "check":
-                for (String cur : elems)
-                    if (hashFunc(cur) == query.ind)
-                        out.print(cur + " ");
+                LinkedList<String> chains = check(query.ind);
+                if (chains.size() > 0) {
+                    out.print(String.join(" ", chains));
+                }
                 out.println();
                 // Uncomment the following if you want to play with the program interactively.
-                // out.flush();
+                 out.flush();
                 break;
             default:
                 throw new RuntimeException("Unknown query: " + query.type);
         }
     }
 
+    public void add(String key)
+    {
+        int hashCode = hashFunc(key);
+        elems.get(hashCode).add(key);
+    }
+
+    public void del(String key)
+    {
+        int hashCode = hashFunc(key);
+        LinkedList<String> chains = elems.get(hashCode);
+        ListIterator<String> iterator = chains.listIterator();
+        int i = 0;
+        while (iterator.hasNext()) {
+            String s = iterator.next();
+            if (s.compareTo(key) == 0) {
+                chains.remove(i);
+                break;
+            }
+            i++;
+        }
+    }
+
+    public boolean find(String key)
+    {
+        int hashCode = hashFunc(key);
+        LinkedList<String> chains = elems.get(hashCode);
+        for (String c : chains) {
+            if (c.compareTo(key) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public LinkedList<String> check(int index)
+    {
+        return elems.get(index);
+    }
+
     public void processQueries() throws IOException {
-        elems = new ArrayList<>();
         in = new FastScanner();
         out = new PrintWriter(new BufferedOutputStream(System.out));
         bucketCount = in.nextInt();
+        elems = new ArrayList<>();
+        for (int i = 0; i < bucketCount; i++) {
+            elems.add(new LinkedList<>());
+        }
         int queryCount = in.nextInt();
         for (int i = 0; i < queryCount; ++i) {
             processQuery(readQuery());
@@ -118,3 +158,4 @@ public class HashChains {
         }
     }
 }
+
