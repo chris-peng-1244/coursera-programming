@@ -31,26 +31,27 @@ public class HashSubstring {
         }
     }
 
-    private static int[] precomputeHash(Data data)
+    private static long[] precomputeHash(Data data)
     {
         int textLength = data.text.length();
         int patternLength = data.pattern.length();
-        int[] hashes = new int[textLength-patternLength+1];
+        long[] hashes = new long[textLength-patternLength+1];
         String s = data.text.substring(data.text.length() - data.pattern.length(), data.text.length());
         hashes[textLength-patternLength]  = polyHash(s);
-        int y = 1;
+        long y = 1;
         for (int i = 0; i < patternLength; i++) {
             y = (y * multiplier) % prime;
         }
         for (int i = textLength - patternLength - 1; i >= 0; i--) {
-            hashes[i] = (multiplier * hashes[i+1] + data.text.charAt(i) - y * data.text.charAt(i + patternLength)) % prime;
+            long z = multiplier * hashes[i+1] + data.text.charAt(i) - y * data.text.charAt(i + patternLength);
+            hashes[i] = (z % prime + prime) % prime;
         }
         return hashes;
     }
 
-    private static int polyHash(String s)
+    private static long polyHash(String s)
     {
-        int hashCode = 0;
+        long hashCode = 0;
         for (int i = s.length()-1; i >= 0; i--) {
             hashCode = (hashCode * multiplier + s.charAt(i)) % prime;
         }
@@ -59,12 +60,12 @@ public class HashSubstring {
 
     private static List<Integer> getOccurrences(Data input) {
         String s = input.pattern, t = input.text;
-        int[] hashes = precomputeHash(input);
+        long[] hashes = precomputeHash(input);
         int m = s.length(), n = t.length();
-        int pHash = polyHash(input.pattern);
+        long pHash = polyHash(input.pattern);
         List<Integer> occurrences = new ArrayList<Integer>();
         for (int i = 0; i + m <= n; ++i) {
-            int tHash = hashes[i];
+            long tHash = hashes[i];
             if (tHash != pHash) {
                 continue;
             }
