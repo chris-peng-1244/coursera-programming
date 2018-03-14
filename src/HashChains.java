@@ -70,7 +70,7 @@ public class HashChains {
     public void add(String key)
     {
         int hashCode = hashFunc(key);
-        elems.get(hashCode).add(key);
+        elems.get(hashCode).add(0, key);
     }
 
     public void del(String key)
